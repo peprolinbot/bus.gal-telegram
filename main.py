@@ -185,9 +185,9 @@ def search(update, context):
 
 def _select_stop(update, context, stop_id):
     inserted_into = main_db.auto_insert_to_expedition(update.effective_chat.id, stop_id)
-    if inserted_into == "originStopId":
+    if inserted_into == "origin_stop_id":
         main_menu.send(update, context, presentation_text="✅Parada *fijada* como origen.")
-    elif inserted_into == "destStopId":
+    elif inserted_into == "destination_stop_id":
         main_menu.send(update, context, presentation_text="✅Parada *fijada* como destino.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles.\n\nSi no quieres las paradas para el día de hoy, selecciona la fecha con /setDate Día-mes-año.")
     elif inserted_into == "date":
         main_db.remove_expedition(update.effective_chat.id)
