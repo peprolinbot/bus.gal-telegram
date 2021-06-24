@@ -1,7 +1,3 @@
-import threading 
-import os
-from datetime import datetime
-from datetime import timedelta
 import telegram
 from telegram.ext import Updater  
 from telegram.ext import CommandHandler
@@ -12,14 +8,24 @@ from telegram import KeyboardButton
 from telegram import ReplyKeyboardMarkup
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
+
+from sqlalchemy import and_, create_engine
+from sqlalchemy.orm import sessionmaker
+
+import os
+
+from datetime import datetime
+
 from time import sleep
+
 import json
 
 import busGal_api
-from telegram_helpers import *
-from databases import *
 
-#Gets configuration values
+from telegram_helpers import send_typing_action, SimpleMenu, UserSpecificMenu, generate_expeditions_message
+import database
+
+#Gets configuration values.
 try:
     token = os.environ["BUS.GAL_TELEGRAM_TOKEN"]
     bot_name = os.environ["BUS.GAL_BOT_NAME"]
@@ -35,27 +41,36 @@ except KeyError:
 bot = telegram.Bot(token=token)  
 updater = Updater(bot.token, use_context=True, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
 
-main_db = Database(db_path)
+#Set up database
+engine = create_engine(f"sqlite:///{db_path}")
+
+database.Base.metadata.create_all(bind=engine)
+
+Session = sessionmaker()
+Session.configure(bind=engine)
+session = Session()
 
 def _set_state_to_main_menu(user_id):
-    main_db.set_state(user_id, "main_menu")
+    database.set_state(session, user_id, "main_menu")
 
 main_menu = SimpleMenu(bot, [[KeyboardButton("♥️Paradas favoritas")],
                         [KeyboardButton("🔍Resultados")]], "❓Elige que quieres hacer:", _set_state_to_main_menu)
 
 def _get_favorite_stops_names(user_id):
     names = []
-    for stop in main_db.get_favorite_stops_objects(user_id):
+    for stop in database.get_favorite_stops(session, user_id):
         names.append(stop.name)
     return names
 
 def _set_state_to_favorites_menu(user_id):
-    main_db.set_state(user_id, "favorites_menu")
+    database.set_state(session, user_id, "favorites_menu")
 
 all_favorite_stops_menu = UserSpecificMenu(bot, _get_favorite_stops_names, "❓Elige una parada:", _set_state_to_favorites_menu, [KeyboardButton("⬅️Atrás")])
 
 def start(update, context): #Start command. Presents itself and sends an in-keyboard menu
-    msg = "¡Hola!👋 soy " + bot_name + ", y puedo ayudarte a buscar los horarios para los buses de la compañía Arriva Gaalicia. Usa el menu de tú teclado o escribe /help para ver los comandos disponibles."
+    if database.get_user(session, update.effective_chat.id) is None:
+        database.add_user(session, update.effective_chat.id)
+    msg = "¡Hola!👋 soy " + bot_name + ", y puedo ayudarte a buscar los horarios para los buses del Transporte Público de Galicia, para información sobre el origen de los datos usa /about. Usa el menu de tú teclado o escribe /help para ver los comandos disponibles."
     main_menu.send(update, context, msg)
 
 def help(update, context): #Help command. Tells what does each command
@@ -78,9 +93,9 @@ Cuando hagas click sobre una parada, puedes eliminarla haciendo click en el bot�
 
 def about(update, context): #/about command
     context.bot.sendMessage(chat_id=update.effective_chat.id, parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True, text='''
-🚍*Bus.gal Bot*🚍 es un bot no oficial para consultar las paradas y autobuses en la web bus.gal, los mismos qeu en la aplicación _Transporte Público de Galicia_([Play Store](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)), desde Telegram. Se trata de un proyecto personal escrito en Python, de código abierto y sin ánimo de lucro.
+🚍*Bus.gal Bot*🚍 es un bot no oficial para consultar las paradas y autobuses de la web bus.gal, los mismos que en la aplicación _Transporte Público de Galicia_([Play Store](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)), desde Telegram. Se trata de un proyecto personal escrito en Python, de código abierto y sin ánimo de lucro.
 *La información proporcionada por este bot puede no ser exacta al 100%* por motivos técnicos propios o ajenos, por lo que su uso no ofrece ninguna garantía.
-Creado en Ferrol con ❤️, [Python](https://www.python.org/), [python-telegram-bot](https://python-telegram-bot.org/), [SQLite](https://sqlite.org/), [bus.gal-api](https://github.com/peprolinbot/bus.gal-api)(creada por mí 🙃) y otras fantásticas herramientas y librerías. Inspirado en [VigoBusBot](https://t.me/vigobusbot).
+Creado en Ferrol con ❤️, [Python](https://www.python.org/), [python-telegram-bot](https://python-telegram-bot.org/), [SQLAlchemy](https://www.sqlalchemy.org/), [bus.gal-api](https://github.com/peprolinbot/bus.gal-api)(creada por mí 🙃) y otras fantásticas herramientas y librerías. Inspirado en [VigoBusBot](https://t.me/vigobusbot).
 😺[Repositorio GitHub del proyecto](https://github.com/peprolinbot/bus.gal-telegram)
 ☕️¡Ayuda a mantener este bot en funcionamiento! /donate
 _Este proyecto no cuenta con soporte de, no está afiliado con, mantenido por, patrocinado por ni de cualquier otra manera oficialmente conectado con la Xunta de Galicia, los operadores de autobuses o cualquiera de las empresas involucradas en la página web_ [bus.gal](https://www.bus.gal/)_ y su respectiva_ [aplicación](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)_._''')
@@ -98,25 +113,18 @@ Cualquier aportación es de gran ayuda para sufragar el coste que supone mantene
 
 @send_typing_action
 def result(update, context): #/result command
-    values = main_db.get_expedition_values(update.effective_chat.id)
-    if values is None:
+    expedition = database.get_expedition(session, update.effective_chat.id)
+    if expedition is None or expedition.origin is None:
         context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se espicificó la ruta. Hazlo con el menú del teclado o mandándome el nombre de una parada. Para más información manda /help") 
         return
-    elif len(values) == 1:
+    elif expedition.destination is None:
         context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se espicificó la ruta al completo. Pon un destino usando el menú del teclado o mandándome el nombre de una parada. Para más información manda /help") 
         return
-    elif len(values) == 2:
-        date = datetime.now()
-    elif len(values) == 3:
-        date = datetime.strptime(values[2], "%d-%m-%Y")
-    for stop in busGal_api.get_stops():
-        if stop.id == values[0]:
-            origin = stop
-        if stop.id == values[1]:
-            destination = stop
-    trip = busGal_api.Trip(origin, destination, date)
+    
+    trip = busGal_api.Trip(expedition.origin, expedition.destination, expedition.date or datetime.now())
     expeditions = trip.expeditions
-    main_db.remove_expedition(update.effective_chat.id) 
+    database.delete_expedition(session, update.effective_chat.id)
+    database.delete_all_cached_stops(session, update.effective_chat.id) 
     if trip.expeditions == []:
         context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se encontró ninguna ruta con los parámetros especificados😭")
     else:
@@ -125,22 +133,29 @@ def result(update, context): #/result command
             context.bot.sendMessage(chat_id=update.effective_chat.id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
 
 def _text_manager(update, context):
-    state = main_db.get_state(update.effective_chat.id)
+    state = database.get_state(session, update.effective_chat.id)
     if state == "search_menu" or state == "favorites_menu":
         stop = None
-        for online_stop in busGal_api.get_stops():
-            if online_stop.name == update.message.text:
-                stop = online_stop
+        for favorite_stop in database.get_favorite_stops(session, update.effective_chat.id):
+            if favorite_stop.name == update.message.text:
+                stop = favorite_stop
                 break
         if stop is None:
-            search(update, context)
-            return
-        if stop.id in main_db.get_favorite_stops(update.effective_chat.id):
+            stop = None
+            for cached_stop in database.get_cached_stops(session, update.effective_chat.id):
+                if cached_stop.name == update.message.text:
+                    stop = cached_stop
+                    break
+            if stop is None:
+                search(update, context)
+                return
+            else:
+                favorite_button_text = "Añadir a favoritos♥️"
+                favorite_button_callback = "add_favorite;" + str(stop.id)
+        else:
             favorite_button_text = "Quitar de favoritos❌"
             favorite_button_callback = "rm_favorite;" + str(stop.id)
-        else:
-            favorite_button_text = "Añadir a favoritos♥️"
-            favorite_button_callback = "add_favorite;" + str(stop.id)
+        database.add_cached_stop(session, update.effective_chat.id, stop)
         keyboard = [[InlineKeyboardButton(favorite_button_text, callback_data=favorite_button_callback)], [InlineKeyboardButton("Seleccionar parada📍", callback_data="select;" + str(stop.id))]]
         keyboard_obj = InlineKeyboardMarkup(keyboard)
         bot.send_message(chat_id=update.effective_chat.id, text="❓¿Qué quieres hacer con esta parada?", reply_markup=keyboard_obj)
@@ -152,13 +167,17 @@ def _callback_query_handler(update, context):
     query.answer()
     action = query.data.split(";")[0]
     arg = query.data.replace(action+';', '', 1)
+    for cached_stop in database.get_cached_stops(session, update.effective_chat.id):
+        if str(cached_stop.id) == arg:
+            stop = cached_stop
+            break
     if action == "select":
-        _select_stop(update, context, arg)
+        _select_stop(update, context, stop)
     elif action == "add_favorite":
-        main_db.insert_new_favorite_stop(update.effective_chat.id, arg)
+        database.add_favorite_stop(session, update.effective_chat.id, stop)
         main_menu.send(update, context, presentation_text="✅Parada *añadida* a favoritos.")
     elif action == "rm_favorite":
-        main_db.delete_favorite_stop(update.effective_chat.id, arg)
+        database.delete_favorite_stop(session, update.effective_chat.id, stop)
         main_menu.send(update, context, presentation_text="✅Parada *eliminada* de favoritos.")
 
 @send_typing_action
@@ -168,6 +187,7 @@ def search(update, context):
         query = query.split[1:]
 
     stops = busGal_api.search_stop(query)
+    database.add_multiple_cached_stops(session, update.effective_chat.id, stops)
     if stops == []:
         bot.send_message(chat_id=update.effective_chat.id, text="❌No se encontraron paradas para tu búsqueda😭")
         return
@@ -176,42 +196,41 @@ def search(update, context):
         keyboard += [[KeyboardButton(stop.name)]]
 
     def _set_state_to_search_menu(user_id):
-        main_db.set_state(user_id, "search_menu")
+        database.set_state(session, user_id, "search_menu")
 
     results_menu = SimpleMenu(bot, keyboard, "✅Estos son los resultados de tu búsqueda:", _set_state_to_search_menu)
     results_menu.send(update, context)
-    
-    
 
-def _select_stop(update, context, stop_id):
-    inserted_into = main_db.auto_insert_to_expedition(update.effective_chat.id, stop_id)
-    if inserted_into == "origin_stop_id":
+def _select_stop(update, context, stop):
+    expedition = database.get_expedition(session, update.effective_chat.id)
+    if expedition is None or expedition.origin is None:
+        database.insert_to_expedition(session, update.effective_chat.id, origin=stop)
         main_menu.send(update, context, presentation_text="✅Parada *fijada* como origen.")
-    elif inserted_into == "destination_stop_id":
+    elif expedition.destination is None:
+        database.insert_to_expedition(session, update.effective_chat.id, destination=stop)
         main_menu.send(update, context, presentation_text="✅Parada *fijada* como destino.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles.\n\nSi no quieres las paradas para el día de hoy, selecciona la fecha con /setDate Día-mes-año.")
-    elif inserted_into == "date":
-        main_db.remove_expedition(update.effective_chat.id)
-        main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setDate. Vuelve a programar la ruta.")
+    else:
+        main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setDate.")
 
 def select_date(update, context, date=None):
     if date is None:
         date = update.message.text.split()[1:]
         date= ' '.join(date)
-    
-    inserted_into = main_db.auto_insert_to_expedition(update.effective_chat.id, date)
+        space_char = ''.join([i for i in date if not i.isdigit()])[0]
+        date = date.replace(space_char, "-")
+        date = datetime.strptime(date, "%d-%m-%Y")
 
-    if inserted_into == "date":
-        bot.send_message(chat_id=update.effective_chat.id, text="✅Fecha fijada.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles",  parse_mode=telegram.ParseMode.MARKDOWN)
-    else:
-        main_db.remove_expedition(update.effective_chat.id)
-        bot.send_message(chat_id=update.effective_chat.id, text="❌Vuelve a intentarlo después de haber puesto una parada de origen y una de destino.")
+    database.insert_to_expedition(session, update.effective_chat.id, date=date)
+
+    bot.send_message(chat_id=update.effective_chat.id, text="✅Fecha fijada.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles",  parse_mode=telegram.ParseMode.MARKDOWN)
 
 def clear_expedition(update, context):
-    main_db.remove_expedition(update.effective_chat.id)
+    database.delete_expedition(session, update.effective_chat.id)
     bot.send_message(chat_id=update.effective_chat.id, text="✅*Eliminada* la ruta actual.", parse_mode=telegram.ParseMode.MARKDOWN)
 
 def erase_all(update, context):
-    main_db.delete_Everything_from_user(update.effective_chat.id)
+    database.delete_everything_from_user(session, update.effective_chat.id)
+    database.add_user(session, update.effective_chat.id) # This is needed to prevents errors if the user decides to use again the bot without running /start
     bot.send_message(chat_id=update.effective_chat.id, text="✅*Borrado*. Ya no sé nada sobre tí.🙃", parse_mode=telegram.ParseMode.MARKDOWN)
 
 #Defining handlers
@@ -243,6 +262,7 @@ dispatcher.add_handler(start_handler)
 dispatcher.add_handler(help_handler)  
 dispatcher.add_handler(about_handler)
 dispatcher.add_handler(donate_handler)
+dispatcher.add_handler(erase_all_handler)
 dispatcher.add_handler(select_date_handler)
 dispatcher.add_handler(search_handler)
 dispatcher.add_handler(result_handler)
