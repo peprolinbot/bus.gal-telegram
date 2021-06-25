@@ -41,4 +41,4 @@ docker run -d --name bus.gal-telegram -v $PWD/config:/etc/bus.gal-telegram \
 
 This project is not endorsed by, directly affiliated with, maintained by, sponsored by or in any way officially related with la Xunta de Galicia, the bus operators or any of the companies involved in the bus.gal website and the app.
 
-_Este proyecto no cuenta con soporte de, no está afiliado con, mantenido por, patrocinado por ni de cualquier otra manera oficialmente conectado con la Xunta de Galicia, los operadores de autobuses o cualquiera de las empresas involucradas en la página web_ [bus.gal](https://www.bus.gal/)_ y su respectiva_ [aplicación](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)_._
+_Este proyecto no cuenta con soporte de, no está afiliado con, mantenido por, patrocinado por ni de cualquier otra manera oficialmente conectado con la Xunta de Galicia, los operadores de autobuses o cualquiera de las empresas involucradas en la página web_ [bus.gal](https://www.bus.gal/) _y su respectiva_ [aplicación](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)_._
