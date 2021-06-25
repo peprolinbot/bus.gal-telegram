@@ -74,26 +74,26 @@ def start(update, context): #Start command. Presents itself and sends an in-keyb
     main_menu.send(update, context, msg)
 
 def help(update, context): #Help command. Tells what does each command
-    context.bot.sendMessage(chat_id=update.effective_chat.id, text='''❓ Ayuda e información ❓
-👉Uso básico
-Manda el nombre de una parada o escoge una de tu lsita de favoritas para eligirla como origen y repite para poner otra como destino. En caso de que desees una fecha diferente al día de hoy usa /setDate Día-mes-año, ej. /setDate 27-2-2020. Y recibe los resultados con /result.
-👉Guardar paradas
-Puedes guardar tus paradas favoritas o más usadas en una lista que podrás consultar posteriormente. Para guardar una parada, búscala primero, y a continuación, pulsa sobre el botón Añadir a favoritos, justo debajo del mensaje recibido.
-Para ver tus paradas guardadas, pulsa en paradas favoritas en el menú de tu teclado. Todas tus paradas guardadas aparecerán en forma de botones, y pulsando sobre ellas,podrás eligirlas como origen o destino.
-Cuando hagas click sobre una parada, puedes eliminarla haciendo click en el botón "Eliminar de favoritos".
-ℹ️Lista completa de comandos disponibles
-🔸Búsqueda de paradas: envía el nombre de una parada directamente, o precedido por /search
-🔸/result: muestra las rutas disponibles con lso parámetros especificados
-🔸/setDate: fija la el día del que quieres obtener los buses
-🔸/clear: borra el destino, origen y fecha que hayas fijado para la ruta
-🔸/eraseAll: borra todos tus datos (paradas favoritas) del bot
-🔸/help: este comando
-🔸/about: información sobre el bot
+    context.bot.sendMessage(chat_id=update.effective_chat.id, parse_mode=telegram.ParseMode.MARKDOWN, text='''❓ *Ayuda e información* ❓
+👉*Uso básico*
+Manda el nombre de una parada o escoge una de tu lsita de favoritas para eligirla como origen y repite para poner otra como destino. En caso de que desees una fecha diferente al día de hoy usa /setDate Día-mes-año, ej. /setDate 27-02-2020. Y recibe los resultados con /result o pulsando el botón 🔍*Resultados*.
+👉*Guardar paradas*
+Puedes guardar tus paradas favoritas o más usadas en una lista que podrás consultar posteriormente. Para guardar una parada, búscala primero, y a continuación, pulsa sobre el botón *Añadir a favoritos*♥️, justo debajo del mensaje recibido.
+Para ver tus paradas guardadas, pulsa en paradas favoritas en el menú de tu teclado. Todas tus paradas guardadas aparecerán en forma de botones, y pulsando sobre ellas podrás eligirlas como origen o destino.
+Cuando hagas click sobre una parada, puedes eliminarla haciendo click en el botón *Quitar de favoritos*❌.
+ℹ️*Lista completa de comandos disponibles*
+🔸/search: Es más cómodo enviar el nombre de una parada directamente, aunque también funciona enviarla como argumento de este comando
+🔸/result: Muestra las rutas disponibles con los parámetros especificados
+🔸/setDate: Fija la el día del que quieres obtener los horarios de buses
+🔸/clear: Borra el destino, origen y fecha que hayas fijado para la ruta
+🔸/eraseAll: Borra todos tus datos (paradas favoritas) de la base de datos del bot
+🔸/help: Este comando🙃
+🔸/about: Información sobre el bot
 🔸/donate: ¿Cómo puedes colaborar con el mantenimiento de este bot?''')
 
 def about(update, context): #/about command
     context.bot.sendMessage(chat_id=update.effective_chat.id, parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True, text='''
-🚍*Bus.gal Bot*🚍 es un bot no oficial para consultar las paradas y autobuses de la web bus.gal, los mismos que en la aplicación _Transporte Público de Galicia_([Play Store](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)), desde Telegram. Se trata de un proyecto personal escrito en Python, de código abierto y sin ánimo de lucro.
+🚍*Bus.gal Bot*🚍 es un bot no oficial para consultar las paradas y autobuses de la web bus.gal, los mismos que en la aplicación _Transporte Público de Galicia_ ([Play Store](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico))([App Store](https://itunes.apple.com/es/app/transporte-p%C3%BAblico-de-galicia/id1244036417)), desde Telegram. Se trata de un proyecto personal escrito en Python, de código abierto y sin ánimo de lucro.
 *La información proporcionada por este bot puede no ser exacta al 100%* por motivos técnicos propios o ajenos, por lo que su uso no ofrece ninguna garantía.
 Creado en Ferrol con ❤️, [Python](https://www.python.org/), [python-telegram-bot](https://python-telegram-bot.org/), [SQLAlchemy](https://www.sqlalchemy.org/), [bus.gal-api](https://github.com/peprolinbot/bus.gal-api)(creada por mí 🙃) y otras fantásticas herramientas y librerías. Inspirado en [VigoBusBot](https://t.me/vigobusbot).
 😺[Repositorio GitHub del proyecto](https://github.com/peprolinbot/bus.gal-telegram)
@@ -102,7 +102,7 @@ _Este proyecto no cuenta con soporte de, no está afiliado con, mantenido por, p
 
 def donate(update, context):
     context.bot.sendMessage(chat_id=update.effective_chat.id, parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True, text='''
-☕️¡Se necesitan donaciones!☕️
+☕️*¡Se necesitan donaciones!*☕️
 Al contrario que muchas de las aplicaciones para móvil que existen para ver los horarios de los autobuses, los bots de Telegram necesitan funcionar en un servidor de forma constante para que puedan ser utilizados por el público.
 Además, ciertas aplicaciones no oficiales, sin sufrir ningún gasto en servidores ni mantenimiento, contienen anuncios y publicidad embebida, que este bot no incluye de ninguna de sus maneras.
 Cualquier aportación es de gran ayuda para sufragar el coste que supone mantener el servidor y, por tanto, el bot en funcionamiento, y así mantener este y otros proyectos a flote.
@@ -183,8 +183,8 @@ def _callback_query_handler(update, context):
 @send_typing_action
 def search(update, context):
     query = update.message.text
-    if query[0] == "/search":
-        query = query.split[1:]
+    if query.split()[0] == "/search":
+        query = ' '.join(query.split()[1:])
 
     stops = busGal_api.search_stop(query)
     database.add_multiple_cached_stops(session, update.effective_chat.id, stops)
@@ -213,12 +213,11 @@ def _select_stop(update, context, stop):
         main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setDate.")
 
 def select_date(update, context, date=None):
-    if date is None:
-        date = update.message.text.split()[1:]
-        date= ' '.join(date)
-        space_char = ''.join([i for i in date if not i.isdigit()])[0]
-        date = date.replace(space_char, "-")
-        date = datetime.strptime(date, "%d-%m-%Y")
+    date = update.message.text.split()[1:]
+    date= ' '.join(date)
+    space_char = ''.join([i for i in date if not i.isdigit()])[0]
+    date = date.replace(space_char, "-")
+    date = datetime.strptime(date, "%d-%m-%Y")
 
     database.insert_to_expedition(session, update.effective_chat.id, date=date)
 
