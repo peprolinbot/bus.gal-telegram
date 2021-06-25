@@ -23,7 +23,7 @@ So the command is:
 _Así que el comando es el siguiente:_
  
 ```bash
-docker run -d --name bus.gal-telegram -v $PWD/config:/etc/bus.gal-telegram \
+docker run -d --name bus.gal-telegram -v $PWD/config:/etc/busgal-telegram \
     -e BUS.GAL_BOT_NAME="bus.gal" \
     -e BUS.GAL_TELEGRAM_TOKEN="YourToken" \
     ghcr.io/peprolinbot/bus.gal-telegram
