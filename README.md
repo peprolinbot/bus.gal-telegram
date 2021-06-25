@@ -1,6 +1,9 @@
 # bus.gal-telegram
 
+<img src="logo.svg" alt="bus.gal-telegram" width=200/>
+
 [![@busGal_bot](https://img.shields.io/badge/Stable%20bot-@busGal_bot-blue?logo=telegram&style=plastic)](https://telegram.me/busGal_bot)
+![GitHub](https://img.shields.io/github/license/peprolinbot/bus.gal-telegram)
 
 Telegram Bot that serves you info about the buses from the Galician Public Transport Network.
 
@@ -39,6 +42,9 @@ docker run -d --name bus.gal-telegram -v $PWD/config:/etc/busgal-telegram \
 
 ## Disclaimer
 
-This project is not endorsed by, directly affiliated with, maintained by, sponsored by or in any way officially related with la Xunta de Galicia, the bus operators or any of the companies involved in the bus.gal website and the app.
+This project is not endorsed by, directly affiliated with, maintained by, sponsored by or in any way officially related with la Xunta de Galicia, the bus operators or any of the companies involved in the [bus.gal](https://www.bus.gal/) website and the [app](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico).
 
-_Este proyecto no cuenta con soporte de, no está afiliado con, mantenido por, patrocinado por ni de cualquier otra manera oficialmente conectado con la Xunta de Galicia, los operadores de autobuses o cualquiera de las empresas involucradas en la página web_ [bus.gal](https://www.bus.gal/) _y su respectiva_ [aplicación](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)_._
+_Este proyecto no cuenta con soporte de, no está afiliado con, mantenido por, patrocinado por ni de cualquier otra manera oficialmente conectado con la Xunta de Galicia, los operadores de autobuses o cualquiera de las empresas involucradas en la página web [bus.gal](https://www.bus.gal/) y su respectiva [aplicación](https://play.google.com/store/apps/details?id=gal.xunta.transportepublico)._
+
+## Credits
+- Logo: https://pixabay.com/images/id-2027077/
