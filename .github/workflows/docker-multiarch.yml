@@ -2,7 +2,7 @@ name: Docker multi-arch image building and publishing
 
 on:
   push:
-    branches: master
+    branches: main
 
 jobs:
   build:
