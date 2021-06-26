@@ -1,5 +1,5 @@
 APScheduler==3.6.3
-busGal-api==0.0.4.1
+busGal-api==0.0.4.2
 cachetools==4.2.2
 certifi==2021.5.30
 chardet==4.0.0
