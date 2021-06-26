@@ -80,13 +80,13 @@ def generate_expeditions_message(expeditions):
         if len(result[page].encode("utf8")) > 4096 and page != 0:
             result.append("")
             page += 1
-        result[page] += f"{expedition_text}    {departure_str}    {arrival_str}    [Ruta]({expedition.url})\n" 
+        result[page] += f"{expedition_text}    {departure_str}    {arrival_str}    *{expedition.code}* - {expedition.operator.name}    [Ruta]({expedition.url})\n\n" 
     spacing=""
     for i in range(longest_expedition_text):
         spacing+=" "
     spacing += "           " + "    "
     if result != [""]:
-        result.insert(0, f"*Nombre{spacing}Salida    Llegada    Ruta*\n")
+        result.insert(0, f"*Nombre{spacing}Salida    Llegada    Línea    Ruta*\n")
     else:
         result = None
     return result 
