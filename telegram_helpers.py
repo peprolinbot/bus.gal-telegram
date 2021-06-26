@@ -4,8 +4,12 @@ from telegram import ReplyKeyboardMarkup
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 from telegram import ChatAction
+
 from datetime import datetime
+
 from functools import wraps
+
+import prettytable
 
 def send_typing_action(func):
     """Sends typing action while processing func command."""
@@ -60,33 +64,26 @@ class UserSpecificMenu:
 
 
 def generate_expeditions_message(expeditions):
+    table = prettytable.PrettyTable()
+    table.field_names = ["Origen", "Salida", "Destino", "Llegada", "Info"]
 
-    longest_expedition_text = 0
     for expedition in expeditions:
-        expedition_text = f"{expedition.origin.name}➡️{expedition.destination.name}"
-        if len(expedition_text) > longest_expedition_text:
-            longest_expedition_text = len(expedition_text)
+        table.add_row([expedition.origin.name, f"*{expedition.departure.strftime('%H:%M')}*", expedition.destination.name, f"*{expedition.arrival.strftime('%H:%M')}*", f"[Más info.]({expedition.url})\n"])
+    
+    table.border = False
+    table.hrules = prettytable.NONE
+    table.vrules = prettytable.NONE
+    table.align = "l"
 
-    result = [""]
-    page=0
-    for expedition in expeditions:
-        departure_str = expedition.departure.strftime("%H:%M")
-        arrival_str = expedition.arrival.strftime("%H:%M")
-
-        expedition_text = f"{expedition.origin.name}➡️{expedition.destination.name}"
-        if len(expedition_text) < longest_expedition_text:
-            for i in range((longest_expedition_text - len(expedition_text)) * 3):
-                expedition_text += " "
-        if len(result[page].encode("utf8")) > 4096 and page != 0:
-            result.append("")
-            page += 1
-        result[page] += f"{expedition_text}    {departure_str}    {arrival_str}    *{expedition.code}* - {expedition.operator.name}    [Ruta]({expedition.url})\n\n" 
-    spacing=""
-    for i in range(longest_expedition_text):
-        spacing+=" "
-    spacing += "           " + "    "
-    if result != [""]:
-        result.insert(0, f"*Nombre{spacing}Salida    Llegada    Línea    Ruta*\n")
-    else:
-        result = None
-    return result 
+    header = table.get_string().split("Info")[0] + "Info"
+    message_lines = table.get_string().split("Info")[1].split("\n")
+    
+    messages = [header, ""]
+    message_number = 1 
+    for line in message_lines:
+        if len(messages[message_number].encode("utf8")) > 4096:
+            message_number += 1
+            messages.append("")
+        messages[message_number] += "\n" + line
+        
+    return messages
