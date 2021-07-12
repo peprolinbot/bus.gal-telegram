@@ -214,6 +214,9 @@ def _select_stop(update, context, stop):
 
 def select_date(update, context):
     date = update.message.text.split()[1:]
+    if date == []:
+        bot.send_message(chat_id=update.effective_chat.id, text="❌Tienes que especificar una fecha en formato día-mes-año. Ejemplo: 27-02-2020")
+        return
     date= ' '.join(date)
     space_char = ''.join([i for i in date if not i.isdigit()])[0] #Gets the spacing character
     date = date.replace(space_char, "-")
