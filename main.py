@@ -1,5 +1,5 @@
 import telegram
-from telegram.ext import Updater  
+from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import CallbackQueryHandler
@@ -38,7 +38,7 @@ except KeyError:
     db_path = data["database_path"]
 
 #Sets up the telegram bot
-bot = telegram.Bot(token=token)  
+bot = telegram.Bot(token=token)
 updater = Updater(bot.token, use_context=True, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
 
 #Set up database
@@ -84,7 +84,7 @@ Cuando hagas click sobre una parada, puedes eliminarla haciendo click en el bot�
 ℹ️*Lista completa de comandos disponibles*
 🔸/search: Es más cómodo enviar el nombre de una parada directamente, aunque también funciona enviarla como argumento de este comando
 🔸/result: Muestra las rutas disponibles con los parámetros especificados
-🔸/setDate: Fija la el día del que quieres obtener los horarios de buses
+🔸/setDate: Fija la fecha del día del que quieres obtener los horarios de buses
 🔸/clear: Borra el destino, origen y fecha que hayas fijado para la ruta
 🔸/eraseAll: Borra todos tus datos (paradas favoritas) de la base de datos del bot
 🔸/help: Este comando🙃
@@ -115,16 +115,16 @@ Cualquier aportación es de gran ayuda para sufragar el coste que supone mantene
 def result(update, context): #/result command
     expedition = database.get_expedition(session, update.effective_chat.id)
     if expedition is None or expedition.origin is None:
-        context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se espicificó la ruta. Hazlo con el menú del teclado o mandándome el nombre de una parada. Para más información manda /help") 
+        context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se espicificó la ruta. Hazlo con el menú del teclado o mandándome el nombre de una parada. Para más información manda /help")
         return
     elif expedition.destination is None:
-        context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se espicificó la ruta al completo. Pon un destino usando el menú del teclado o mandándome el nombre de una parada. Para más información manda /help") 
+        context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se espicificó la ruta al completo. Pon un destino usando el menú del teclado o mandándome el nombre de una parada. Para más información manda /help")
         return
-    
+
     trip = busGal_api.Trip(expedition.origin, expedition.destination, expedition.date or datetime.now())
     expeditions = trip.expeditions
     database.delete_expedition(session, update.effective_chat.id)
-    database.delete_all_cached_stops(session, update.effective_chat.id) 
+    database.delete_all_cached_stops(session, update.effective_chat.id)
     if trip.expeditions == []:
         context.bot.sendMessage(chat_id=update.effective_chat.id, text="❌No se encontró ninguna ruta con los parámetros especificados😭")
     else:
@@ -233,7 +233,7 @@ def erase_all(update, context):
     bot.send_message(chat_id=update.effective_chat.id, text="✅*Borrado*. Ya no sé nada sobre tí.🙃", parse_mode=telegram.ParseMode.MARKDOWN)
 
 #Defining handlers
-start_handler = CommandHandler('start', start)  
+start_handler = CommandHandler('start', start)
 help_handler = CommandHandler('help', help)
 about_handler = CommandHandler('about', about)
 donate_handler = CommandHandler('donate', donate)
@@ -258,7 +258,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 #Adding handlers
 dispatcher.add_handler(start_handler)
-dispatcher.add_handler(help_handler)  
+dispatcher.add_handler(help_handler)
 dispatcher.add_handler(about_handler)
 dispatcher.add_handler(donate_handler)
 dispatcher.add_handler(erase_all_handler)
@@ -272,4 +272,4 @@ dispatcher.add_handler(btn_back_handler)
 dispatcher.add_handler(all_msg_handler)
 dispatcher.add_handler(callback_query_handler)
 
-updater.start_polling() 
+updater.start_polling()
