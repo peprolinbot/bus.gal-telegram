@@ -76,7 +76,7 @@ def start(update, context): #Start command. Presents itself and sends an in-keyb
 def help(update, context): #Help command. Tells what does each command
     context.bot.sendMessage(chat_id=update.effective_chat.id, parse_mode=telegram.ParseMode.MARKDOWN, text='''❓ *Ayuda e información* ❓
 👉*Uso básico*
-Manda el nombre de una parada o escoge una de tu lsita de favoritas para eligirla como origen y repite para poner otra como destino. En caso de que desees una fecha diferente al día de hoy usa /setDate Día-mes-año, ej. /setDate 27-02-2020. Y recibe los resultados con /result o pulsando el botón 🔍*Resultados*.
+Manda el nombre de una parada o escoge una de tu lsita de favoritas para eligirla como origen y repite para poner otra como destino. En caso de que desees una fecha diferente al día de hoy usa /setdate Día-mes-año, ej. /setdate 27-02-2020. Y recibe los resultados con /result o pulsando el botón 🔍*Resultados*.
 👉*Guardar paradas*
 Puedes guardar tus paradas favoritas o más usadas en una lista que podrás consultar posteriormente. Para guardar una parada, búscala primero, y a continuación, pulsa sobre el botón *Añadir a favoritos*♥️, justo debajo del mensaje recibido.
 Para ver tus paradas guardadas, pulsa en paradas favoritas en el menú de tu teclado. Todas tus paradas guardadas aparecerán en forma de botones, y pulsando sobre ellas podrás eligirlas como origen o destino.
@@ -84,9 +84,9 @@ Cuando hagas click sobre una parada, puedes eliminarla haciendo click en el bot�
 ℹ️*Lista completa de comandos disponibles*
 🔸/search: Es más cómodo enviar el nombre de una parada directamente, aunque también funciona enviarla como argumento de este comando
 🔸/result: Muestra las rutas disponibles con los parámetros especificados
-🔸/setDate: Fija la fecha del día del que quieres obtener los horarios de buses
+🔸/setdate: Fija la fecha del día del que quieres obtener los horarios de buses
 🔸/clear: Borra el destino, origen y fecha que hayas fijado para la ruta
-🔸/eraseAll: Borra todos tus datos (paradas favoritas) de la base de datos del bot
+🔸/eraseall: Borra todos tus datos (paradas favoritas) de la base de datos del bot
 🔸/help: Este comando🙃
 🔸/about: Información sobre el bot
 🔸/donate: ¿Cómo puedes colaborar con el mantenimiento de este bot?''')
@@ -208,9 +208,9 @@ def _select_stop(update, context, stop):
         main_menu.send(update, context, presentation_text="✅Parada *fijada* como origen.")
     elif expedition.destination is None:
         database.insert_to_expedition(session, update.effective_chat.id, destination=stop)
-        main_menu.send(update, context, presentation_text="✅Parada *fijada* como destino.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles.\n\nSi no quieres las paradas para el día de hoy, selecciona la fecha con /setDate Día-mes-año.")
+        main_menu.send(update, context, presentation_text="✅Parada *fijada* como destino.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles.\n\nSi no quieres las paradas para el día de hoy, selecciona la fecha con /setdate Día-mes-año.")
     else:
-        main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setDate.")
+        main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setdate.")
 
 def select_date(update, context, date=None):
     date = update.message.text.split()[1:]
@@ -237,8 +237,8 @@ start_handler = CommandHandler('start', start)
 help_handler = CommandHandler('help', help)
 about_handler = CommandHandler('about', about)
 donate_handler = CommandHandler('donate', donate)
-erase_all_handler = CommandHandler('eraseAll', erase_all)
-select_date_handler = CommandHandler('setDate', select_date)
+erase_all_handler = CommandHandler('eraseall', erase_all)
+select_date_handler = CommandHandler('setdate', select_date)
 search_handler = CommandHandler('search', search)
 result_handler = CommandHandler('result', result)
 clear_handler = CommandHandler('clear', clear_expedition)
