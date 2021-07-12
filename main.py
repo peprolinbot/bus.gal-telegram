@@ -242,6 +242,14 @@ def erase_all(update, context):
     database.add_user(session, update.effective_chat.id) # This is needed to prevents errors if the user decides to use again the bot without running /start
     bot.send_message(chat_id=update.effective_chat.id, text="✅*Borrado*. Ya no sé nada sobre tí.🙃", parse_mode=telegram.ParseMode.MARKDOWN)
 
+def error_callback(update, context):
+    try:
+        raise context.error
+    except Exception as e:
+        bot.send_message(chat_id=update.effective_chat.id, text=f"⚠️Ha ocurrido un *error*:\n```\n{repr(e)}```\nPuedes [crear un ticket en GitHub](https://github.com/peprolinbot/bus.gal-telegram/issues) si lo crees necesario.", parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True)
+        raise context.error
+
+
 #Defining handlers
 start_handler = CommandHandler('start', start)
 help_handler = CommandHandler('help', help)
@@ -281,5 +289,6 @@ dispatcher.add_handler(btn_favorite_stops_handler)
 dispatcher.add_handler(btn_back_handler)
 dispatcher.add_handler(all_msg_handler)
 dispatcher.add_handler(callback_query_handler)
+dispatcher.add_error_handler(error_callback)
 
 updater.start_polling()
