@@ -212,12 +212,16 @@ def _select_stop(update, context, stop):
     else:
         main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setdate.")
 
-def select_date(update, context, date=None):
+def select_date(update, context):
     date = update.message.text.split()[1:]
     date= ' '.join(date)
-    space_char = ''.join([i for i in date if not i.isdigit()])[0]
+    space_char = ''.join([i for i in date if not i.isdigit()])[0] #Gets the spacing character
     date = date.replace(space_char, "-")
-    date = datetime.strptime(date, "%d-%m-%Y")
+
+    if len(date.split("-")[2]) == 2:
+        date = datetime.strptime(date, "%d-%m-%y")
+    else:
+        date = datetime.strptime(date, "%d-%m-%Y")
 
     database.insert_to_expedition(session, update.effective_chat.id, date=date)
 
