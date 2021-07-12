@@ -213,19 +213,28 @@ def _select_stop(update, context, stop):
         main_menu.send(update, context, presentation_text="❌Ya has puesto todos los valores. Para las fechas se usa /setdate.")
 
 def select_date(update, context):
+    def _format_error():
+        bot.send_message(chat_id=update.effective_chat.id, text="❌Tienes que especificar una fecha en formato día-mes-año. Ejemplo: 27-02-2020")
+
     date = update.message.text.split()[1:]
     if date == []:
-        bot.send_message(chat_id=update.effective_chat.id, text="❌Tienes que especificar una fecha en formato día-mes-año. Ejemplo: 27-02-2020")
+        _format_error()
         return
     date= ' '.join(date)
     space_char = ''.join([i for i in date if not i.isdigit()])[0] #Gets the spacing character
     date = date.replace(space_char, "-")
 
-    if len(date.split("-")[2]) == 2:
-        date = datetime.strptime(date, "%d-%m-%y")
-    else:
-        date = datetime.strptime(date, "%d-%m-%Y")
-
+    try:
+        if len(date.split("-")[2]) == 2:
+            date = datetime.strptime(date, "%d-%m-%y")
+        else:
+            date = datetime.strptime(date, "%d-%m-%Y")
+    except IndexError: # Raises when argument does not contain two dashes, and so it probably isn't a date
+        _format_error()
+        return
+    except ValueError: # Raises when the format doesn't match %d-%m-%y or %d-%m-%Y
+        _format_error()
+        return
     database.insert_to_expedition(session, update.effective_chat.id, date=date)
 
     bot.send_message(chat_id=update.effective_chat.id, text="✅Fecha fijada.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles",  parse_mode=telegram.ParseMode.MARKDOWN)
