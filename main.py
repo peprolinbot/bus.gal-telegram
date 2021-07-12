@@ -224,8 +224,11 @@ def select_date(update, context, date=None):
     bot.send_message(chat_id=update.effective_chat.id, text="✅Fecha fijada.\nUsa /result o el botón 🔍*Resultados* para ver los viajes disponibles",  parse_mode=telegram.ParseMode.MARKDOWN)
 
 def clear_expedition(update, context):
-    database.delete_expedition(session, update.effective_chat.id)
-    bot.send_message(chat_id=update.effective_chat.id, text="✅*Eliminada* la ruta actual.", parse_mode=telegram.ParseMode.MARKDOWN)
+    if database.get_expedition(session, update.effective_chat.id) is None:
+        bot.send_message(chat_id=update.effective_chat.id, text="❌No existe ninguna ruta para borrar.")
+    else:
+        database.delete_expedition(session, update.effective_chat.id)
+        bot.send_message(chat_id=update.effective_chat.id, text="✅*Eliminada* la ruta actual.", parse_mode=telegram.ParseMode.MARKDOWN)
 
 def erase_all(update, context):
     database.delete_everything_from_user(session, update.effective_chat.id)
