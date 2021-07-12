@@ -82,7 +82,6 @@ Puedes guardar tus paradas favoritas o más usadas en una lista que podrás cons
 Para ver tus paradas guardadas, pulsa en paradas favoritas en el menú de tu teclado. Todas tus paradas guardadas aparecerán en forma de botones, y pulsando sobre ellas podrás eligirlas como origen o destino.
 Cuando hagas click sobre una parada, puedes eliminarla haciendo click en el botón *Quitar de favoritos*❌.
 ℹ️*Lista completa de comandos disponibles*
-🔸/search: Es más cómodo enviar el nombre de una parada directamente, aunque también funciona enviarla como argumento de este comando
 🔸/result: Muestra las rutas disponibles con los parámetros especificados
 🔸/setdate: Fija la fecha del día del que quieres obtener los horarios de buses
 🔸/clear: Borra el destino, origen y fecha que hayas fijado para la ruta
@@ -183,8 +182,6 @@ def _callback_query_handler(update, context):
 @send_typing_action
 def search(update, context):
     query = update.message.text
-    if query.split()[0] == "/search":
-        query = ' '.join(query.split()[1:])
 
     stops = busGal_api.search_stop(query)
     database.add_multiple_cached_stops(session, update.effective_chat.id, stops)
@@ -266,7 +263,6 @@ about_handler = CommandHandler('about', about)
 donate_handler = CommandHandler('donate', donate)
 erase_all_handler = CommandHandler('eraseall', erase_all)
 select_date_handler = CommandHandler('setdate', select_date)
-search_handler = CommandHandler('search', search)
 result_handler = CommandHandler('result', result)
 clear_handler = CommandHandler('clear', clear_expedition)
 
