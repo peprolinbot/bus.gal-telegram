@@ -4,7 +4,7 @@ cachetools==4.2.2
 certifi==2021.5.30
 chardet==4.0.0
 greenlet==1.1.0
-idna==2.10
+idna==3.3
 prettytable==2.1.0
 python-telegram-bot==13.6
 pytz==2021.1
